@@ -27,13 +27,18 @@ negative_path   = "../data/ncrna_db_length_norm.csv"
 
 training_fraction = .8
 vectors_per_char  = 100  #i don't really know what this does
+max_RS_length     = 300
 n_neurons         = 100
 n_epoch           = 1
 batch             = 500
-RS_size           = 64   #i think this is 64 for kmers and 4 for seq, # unique instances
+seq_or_kmer       = 1  # for seq: 0, for Kmer: 1
 
-
-
+if seq_or_kmer == 0:
+    RS_size = 4
+elif seq_or_kmer == 1:
+    RS_size = 64
+    
+    
 
 # load in the data
 # first column is ID
@@ -52,16 +57,24 @@ def data_prep(path, training_fraction , pone):
     # split the data, I know William will hate me for doing this so simply
     # these are positives
     
-    train_size = int(len(data) * training_fraction)
-    test_size = len(data) - train_size
-    train, test = data[0:train_size], data[train_size:len(seqs)]
-    print(train_size)
+    if seq_or_kmer == 1:
+        train_size = int(len(data) * training_fraction)
+        test_size = len(data) - train_size
+        train, test = data[0:train_size], data[train_size:len(data)]
+        print(train_size)
+        
+    if seq_or_kmer == 0:
+        train_size = int(len(seqs) * training_fraction)
+        test_size = len(seqs) - train_size
+        train, test = seqs[0:train_size], seqs[train_size:len(seqs)]
+        print(train_size) 
+        
     
     def seq_nummer(seq):
         
         '''
         
-        A = 1, T = 2, C = 3, G = 4
+        A = 1, U = 2, C = 3, G = 4
         
         '''
         out_list = []
@@ -82,21 +95,27 @@ def data_prep(path, training_fraction , pone):
     x_test = []
     y_test = []
     
-    '''
-    for s in train:
-        converted_aucg_1234 = seq_nummer(s)
-        X_train.append(converted_aucg_1234)
-        Y_train.append(pone)
-    for s in test:
-        converted_aucg_1234 = seq_nummer(s)
-        x_test.append(converted_aucg_1234)
-        y_test.append(pone)
-    '''
-    X_train = train; x_test = test;
+    if seq_or_kmer == 0:
+        for s in train:
+            converted_aucg_1234 = seq_nummer(s)
+            X_train.append(converted_aucg_1234)
+            Y_train.append(pone)
+        for s in test:
+            converted_aucg_1234 = seq_nummer(s)
+            x_test.append(converted_aucg_1234)
+            y_test.append(pone)
+    
+    if seq_or_kmer == 1:
+        X_train = train; x_test = test;
+        
     for s in range(0,len(X_train)):
         Y_train.append(pone)
     for s in range(0,len(x_test)):
         y_test.append(pone)
+    
+    if seq_or_kmer == 0:
+        X_train = sequence.pad_sequences(X_train, maxlen=max_RS_length)
+        x_test = sequence.pad_sequences(x_test, maxlen=max_RS_length)
         
     return X_train, Y_train, x_test, y_test
     
@@ -117,6 +136,9 @@ for i in range(0, len(X_train)):
         maxml = max(X_train[i])
         
 max_RS_freq = maxml  # what is the highest value that occurrs in dataset; for a seq should be 4, kmers 31.
+
+
+1/0
 
 '''
 X_train = sequence.pad_sequences(X_train, maxlen = max_RS_len)
