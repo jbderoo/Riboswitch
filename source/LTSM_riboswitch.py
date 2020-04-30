@@ -31,10 +31,11 @@ max_RS_length     = 300
 n_neurons         = 100
 n_epoch           = 1
 batch             = 500
-seq_or_kmer       = 1  # for seq: 0, for Kmer: 1
+seq_or_kmer       = 0  # for seq: 0, for Kmer: 1
+save_model        = 0
 
 if seq_or_kmer == 0:
-    RS_size = 4
+    RS_size = 300
 elif seq_or_kmer == 1:
     RS_size = 64
     
@@ -108,10 +109,10 @@ def data_prep(path, training_fraction , pone):
     if seq_or_kmer == 1:
         X_train = train; x_test = test;
         
-    for s in range(0,len(X_train)):
-        Y_train.append(pone)
-    for s in range(0,len(x_test)):
-        y_test.append(pone)
+        for s in range(0,len(X_train)):
+            Y_train.append(pone)
+        for s in range(0,len(x_test)):
+            y_test.append(pone)
     
     if seq_or_kmer == 0:
         X_train = sequence.pad_sequences(X_train, maxlen=max_RS_length)
@@ -123,7 +124,6 @@ X_train_pos, Y_train_pos, x_test_pos, y_test_pos = data_prep(positive_path, trai
 X_train_neg, Y_train_neg, x_test_neg, y_test_neg = data_prep(negative_path, training_fraction, 0) 
 
 X_train = []; Y_train = []; x_test = []; y_train = []
-
 X_train = np.concatenate ( (X_train_pos , X_train_neg), axis = 0)
 Y_train = Y_train_pos + (Y_train_neg)
 x_test  = np.concatenate  ( (x_test_pos , x_test_neg), axis=0)
@@ -135,15 +135,10 @@ for i in range(0, len(X_train)):
     if (max(X_train[i])) > maxml:
         maxml = max(X_train[i])
         
-max_RS_freq = maxml  # what is the highest value that occurrs in dataset; for a seq should be 4, kmers 31.
+max_RS_freq = maxml+1  # what is the highest value that occurrs in dataset; for a seq should be 4, kmers 31.
+                       # this is exclusive, add 1 
 
 
-1/0
-
-'''
-X_train = sequence.pad_sequences(X_train, maxlen = max_RS_len)
-x_test = sequence.pad_sequences(x_test, maxlen = max_RS_len)
-'''
 
 # create the model
 
@@ -157,7 +152,7 @@ Because this is a classification problem, the final output is a Dense layer w/ s
    
 
 model = Sequential()
-model.add(Embedding(max_RS_freq, vectors_per_char, input_length=RS_size)) 
+model.add(Embedding(max_RS_freq, vectors_per_char, input_length=max_RS_length)) 
 model.add(LSTM(n_neurons))   
 model.add(Dense(1, activation = 'sigmoid'))
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -165,7 +160,9 @@ print(model.summary())
 model.fit(X_train, Y_train, epochs=n_epoch, batch_size=batch)
 scores = model.evaluate(x_test, y_test, verbose=0)
 print("Accuracy: %.2f%%" % (scores[1]*100))
-#model.save('model1.h5')
+
+if save_model == 1:
+    model.save('model1.h5')
 
     
     
