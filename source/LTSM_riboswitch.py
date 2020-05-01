@@ -27,17 +27,17 @@ negative_path   = "../data/ncrna_db_length_norm.csv"
 
 training_fraction = .8
 vectors_per_char  = 100  #i don't really know what this does
-max_RS_length     = 300
+#max_RS_length     = 300
 n_neurons         = 100
 n_epoch           = 1
 batch             = 500
-seq_or_kmer       = 0  # for seq: 0, for Kmer: 1
+seq_or_kmer       = 1  # for seq: 0, for Kmer: 1
 save_model        = 0
 
 if seq_or_kmer == 0:
-    RS_size = 300
+    max_RS_length = 300
 elif seq_or_kmer == 1:
-    RS_size = 64
+    max_RS_length = 64
     
     
 
@@ -138,8 +138,13 @@ for i in range(0, len(X_train)):
 max_RS_freq = maxml+1  # what is the highest value that occurrs in dataset; for a seq should be 4, kmers 31.
                        # this is exclusive, add 1 
 
+np.random.seed(5)
+np.random.shuffle(X_train)
+np.random.shuffle(Y_train)
 
-
+np.random.seed(9)
+np.random.shuffle(x_test)
+np.random.shuffle(y_test)
 # create the model
 
 '''
