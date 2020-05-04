@@ -58,7 +58,7 @@ elif seq_or_kmer == 1:
 
 
 def data_prep(path, training_fraction , pone):
-    df1 = pd.read_csv(positive_path)
+    df1 = pd.read_csv(path)
     dataset = df1.values
     IDs  = dataset[:,1]
     seqs = dataset[:,2]

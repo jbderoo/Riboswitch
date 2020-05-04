@@ -6,26 +6,17 @@ Created on Fri May  1 12:49:35 2020
 @author: jderoo
 """
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 29 22:00:53 2020
 
-@author: jderoo
-"""
 
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-import math
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
-from sklearn.metrics import mean_squared_error
+from datetime import datetime
 
-#np.random.seed(1)
 
 # Jacob's first LSTM
 
@@ -38,13 +29,9 @@ vectors_per_char  = 32   # i don't really know what this does, "inteligence of e
 n_neurons         = 100
 n_epoch           = 1  # this value can be too high; for a CNN solving this problem 200 epochs was appropriate.
 batch             = 500  # see above: too high is not true.
-seq_or_kmer       = 1    # for seq: 0, for Kmer: 1
 save_model        = 1    # 0: do not save the model (.h5)
+max_RS_length     = 300
 
-if seq_or_kmer == 0:
-    max_RS_length = 300
-elif seq_or_kmer == 1:
-    max_RS_length = 300
     
     
 
@@ -104,7 +91,7 @@ def data_prep(path, training_fraction , pone):
     
     
     X_train = sequence.pad_sequences(X_train, maxlen=max_RS_length)
-    x_test = sequence.pad_sequences(x_test, maxlen=max_RS_length)
+    x_test  = sequence.pad_sequences(x_test,  maxlen=max_RS_length)
        
         
     return X_train, Y_train, x_test, y_test
@@ -127,11 +114,11 @@ maxml = max(maxes)
         
 max_RS_freq = maxml+1  # what is the highest value that occurrs in dataset; for a seq should be 4, 3mers 33.
                        # this is exclusive, add 1 
-print('the most frequent thing is Hz',max_RS_freq)
-print('\n X_train[0]: ', X_train[0])
-# perhaps some strangeness with the structure of the data (i.e. all positives then all negatives) is causing 
-# eradic behavior? shuffle data identically.
 
+
+
+
+# shuffle data identically.
 
 np.random.seed(5)
 np.random.shuffle(X_train)
@@ -161,15 +148,12 @@ model.add(LSTM(n_neurons))
 model.add(Dense(1, activation = 'sigmoid'))
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 print(model.summary())
-model.fit(X_train, Y_train, epochs=2, batch_size=batch)
+model.fit(X_train, Y_train, epochs=1, batch_size=batch)
 scores = model.evaluate(x_test, y_test, verbose=0)
 print("Accuracy: %.2f%%" % (scores[1]*100))
 
+dt = datetime.now()
 if save_model == 1:
-    model.save('model_5mer.h5')
+    model.save(r'model_5mer_{dt.strftime("YmdHMs")}.h5')
 
     
-    
-
-
-
