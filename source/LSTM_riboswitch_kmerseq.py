@@ -4,6 +4,12 @@
 Created on Fri May  1 12:49:35 2020
 
 @author: jderoo
+
+Hugely helpful reference for values and model building:
+https://machinelearningmastery.com/sequence-classification-lstm-recurrent-neural-networks-python-keras/
+
+Data prep was unique to our problem and solved internally.
+
 """
 
 
@@ -24,20 +30,16 @@ from datetime import datetime
 positive_path  = '../data/RS_5mers.csv'
 negative_path   = "../data/ncRNA_5mers_lengthnorm.csv"
 
-training_fraction = .8
+training_fraction = .80  # what % of the data should be training
 vectors_per_char  = 32   # i don't really know what this does, "inteligence of each word" maybe?
-n_neurons         = 100
-n_epoch           = 1  # this value can be too high; for a CNN solving this problem 200 epochs was appropriate.
+n_neurons         = 100  # number of neurons in 2nd layer of model
+n_epoch           = 2    # this value can be too high; for a CNN solving this problem 200 epochs was appropriate.
 batch             = 500  # see above: too high is not true.
 save_model        = 1    # 0: do not save the model (.h5)
-max_RS_length     = 300
+max_RS_length     = 300  # how long is each RNA sequence forced to be. Padded proximally with 0's.
 
     
     
-
-#df = pd.read_csv(positive_path)
-#kmer_list = list((df.columns[3:]))
-#n = len(df.columns[3])
 
 # load in the data
 # first column is ID
@@ -46,13 +48,20 @@ max_RS_length     = 300
 
 
 def data_prep(path, training_fraction , pone):
+    '''
+    path: the path to the file in use, typically .csv
+    training fraction: percentage split into training
+    pone: positive or negative: yes it's a riboswitch or 0 it isn't
+    
+    '''
+    
     df1 = pd.read_csv(path)
     dataset = df1.values
-    IDs  = dataset[:,1]
-    seqs = dataset[:,2]
-    data = dataset[:,3:]
+    IDs  = dataset[:,1]  # unique URS code assigned to each string
+    seqs = dataset[:,2]  # the actual raw sequence itself
+    data = dataset[:,3:] # the frequency in that string that Kmer appears
     kmer_list = list((df1.columns[3:]))
-    n = len(df1.columns[3])
+    n = len(df1.columns[3]) # length of each Kmer (i.e. 3mer n =3, 4mer n = 4)
 
       
     # split the data, I know William will hate me for doing this so simply
@@ -60,19 +69,19 @@ def data_prep(path, training_fraction , pone):
         
 
     train_size = int(len(seqs) * training_fraction)
-    test_size = len(seqs) - train_size
+    test_size  = len(seqs) - train_size
     train, test = seqs[0:train_size], seqs[train_size:len(seqs)]
     print(train_size) 
         
     
     def seq_nummer(seq):
         
-        Kmr_str= [] 
+        Kmer_str = [] 
         for i in range(0,len(seq)-n):   
-            Kmr_str.append( int(kmer_list.index(seq[i:i+n])))
+            Kmer_str.append( int(kmer_list.index(seq[i:i+n])) )
 
                 
-        return Kmr_str
+        return Kmer_str
     
     X_train = []
     Y_train = []
@@ -148,12 +157,13 @@ model.add(LSTM(n_neurons))
 model.add(Dense(1, activation = 'sigmoid'))
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 print(model.summary())
-model.fit(X_train, Y_train, epochs=1, batch_size=batch)
+model.fit(X_train, Y_train, epochs=n_epoch, batch_size=batch)
 scores = model.evaluate(x_test, y_test, verbose=0)
 print("Accuracy: %.2f%%" % (scores[1]*100))
 
 dt = datetime.now()
 if save_model == 1:
-    model.save(r'model_5mer_{dt.strftime("YmdHMs")}.h5')
+    model.save('model2_5mer.h5')
+    #model.save(r'model_5mer_{dt.strftime("YmdHMs")}.h5')
 
     
