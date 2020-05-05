@@ -8,44 +8,66 @@ Created on Mon May  4 20:33:27 2020
 
 
 import pickle
+import time
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import roc_curve
-from sklearn.metrics import roc_auc_score
+import csv
 
-positive_path  = '../data/RS_3mers.csv'
-negative_path  = "../data/ncRNA_3mers_lengthnorm.csv"
-testing_frac  = .70
 
-df1 = pd.read_csv(positive_path)
-df2 = pd.read_csv(negative_path)
 
-df = [df1, df2]
-df = pd.concat(df)
+path  = '../data/5primeUTR_human_kmers_fulllen.csv'
 
-rows, cols = df.shape
 
-Y = []
-
-for row in range(0,rows):
-    if row <= df1.shape[0]:
-        Y.append(1)
-    elif row > df1.shape[0]:
-        Y.append(0)
-        
+df    = pd.read_csv(path)
+ 
+IDs = df.values[:,1]       
 X = df.values[:,3:]
-
-X_train, X_test, y_train, y_test = train_test_split(X,Y,test_size=testing_frac,random_state=42, stratify=Y)
+rows, cols = X.shape
 
 print('reached point 1\n')
 
 
 loaded_model = pickle.load(open('../models/knn_model.p', 'rb'))
+
+st = time.time()
+positives = []
+negatives = []
+split5050 = []
+
 print('reach point 2\n')
-result = loaded_model.predict(X_test[0])
-print('reach point 3\n')
+
+
+for i in range(0,rows):
+    result = loaded_model.predict_proba(X[i].reshape(1,-1))
+    result = result[0][0]
+    if result == 1:
+        positives.append(IDs[i])
+    elif result == 0:
+        negatives.append(IDs[i])
+    elif result == 0.5:
+        split5050.append(IDs[i])
+
+    
+'''
+
+result output: 1x2. [1,0] is positive
+result output: 1x2. [0,1] is negative
+result output: 1x2. [0.5,0.5] is unknown
+
+
+'''    
+
+with open('kNN_negatives.csv','w',newline='') as myfile:
+    wr = csv.writer(myfile, quoting = csv.QUOTE_ALL)
+    wr.writerow(negatives)
+    
+with open('kNN_positives.csv','w',newline='') as myfile:
+    wr = csv.writer(myfile, quoting = csv.QUOTE_ALL)
+    wr.writerow(positives)
+
+with open('kNN_undecided.csv','w',newline='') as myfile:
+    wr = csv.writer(myfile, quoting = csv.QUOTE_ALL)
+    wr.writerow(split5050)    
+    
+    
+    
