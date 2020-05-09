@@ -40,6 +40,7 @@ print('reach point 2\n')
 for i in range(0,rows):
     result = loaded_model.predict_proba(X[i].reshape(1,-1))
     result = result[0][0]
+
     if result == 1:
         positives.append(IDs[i])
     elif result == 0:
