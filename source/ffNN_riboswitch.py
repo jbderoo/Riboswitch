@@ -18,7 +18,7 @@ from sklearn.model_selection import train_test_split
 
 n_epochs   = 20
 batch      = 500
-model_save = 0
+model_save = 1
 
 # load the dataset
 
@@ -79,4 +79,7 @@ model.fit(X, Y, epochs=n_epochs, batch_size=batch, verbose=1)
 scores = model.evaluate(X_test, y_test, verbose=0)
 print("Accuracy: %.2f%%" % (scores[1]*100))
 if model_save == 1:
-    model.save("../models/ffNN_model1_3mer.h5")
+    model_json = model.to_json()
+    with open("../models/ffNN_model2_3mer.json", "w") as json_file:
+        json_file.write(model_json)
+    model.save_weights('../models/ffNN_model2_5mer.h5')

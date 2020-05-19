@@ -22,6 +22,7 @@ from keras.layers import LSTM
 from keras.layers.embeddings import Embedding
 from keras.preprocessing import sequence
 from datetime import datetime
+from keras.models import model_from_json
 
 
 # Jacob's first LSTM
@@ -163,7 +164,10 @@ print("Accuracy: %.2f%%" % (scores[1]*100))
 
 dt = datetime.now()
 if save_model == 1:
-    model.save('model2_5mer.h5')
+    model_json = model.to_json()
+    with open("../data/model3_5mer.json", "w") as json_file:
+        json_file.write(model_json)
+    model.save_weights('../data/model3_5mer.h5')
     #model.save(r'model_5mer_{dt.strftime("YmdHMs")}.h5')
 
     

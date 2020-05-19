@@ -50,7 +50,7 @@ X_train, X_test, y_train, y_test = train_test_split(X,Y,test_size=testing_frac,r
 neighbors = np.arange(1,9)
 train_accuracy = np.empty(len(neighbors))
 test_accuracy  = np.empty(len(neighbors))
-
+'''
 for i,k in enumerate(neighbors):
     print('loop num:\n',i)
     #Setup a knn classifier with k neighbors
@@ -73,7 +73,7 @@ plt.legend()
 plt.xlabel('Number of neighbors')
 plt.ylabel('Accuracy')
 plt.show()
-
+'''
 # I ran for 1 neighbor and 2 neighbor, took several hours. 2 neighbor performs well enough.
 
 print('reached point 1, data built\n')
@@ -91,6 +91,8 @@ print('reached point 4, confusion matrix prepared')
 y_pred_proba = knn.predict_proba(X_test)[:,1]
 fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
 
+
+
 plt.plot([0,1],[0,1],'k--')
 plt.plot(fpr,tpr, label='kNN')
 plt.xlabel('fpr')
@@ -101,5 +103,4 @@ plt.show()
 
 roc_score = roc_auc_score(y_test,y_pred_proba)
 print('the roc_score is: %s\n'%roc_score*100)
-
 

@@ -103,10 +103,16 @@ acc = counter/len(y_test)
 
 print("Accuracy: %.2f%%\n" % (acc*100))
 
-def evaluate_model(predictions, probs, train_predictions, train_probs, train_labels, test_labels):
+
+
+
+def evaluate_model(probs, test_labels):
+    print(type(test_labels))
+    print(type(test_labels))
     """Compare machine learning model to baseline performance.
     Computes statistics and shows ROC curve."""
     
+    '''
     baseline = {}
     
     baseline['recall'] = recall_score(test_labels, 
@@ -128,6 +134,7 @@ def evaluate_model(predictions, probs, train_predictions, train_probs, train_lab
     
     for metric in ['recall', 'precision', 'roc']:
         print(f'{metric.capitalize()} Baseline: {round(baseline[metric], 2)} Test: {round(results[metric], 2)} Train: {round(train_results[metric], 2)}')
+    '''
     
     # Calculate false positive rates and true positive rates
     base_fpr, base_tpr, _ = roc_curve(test_labels, [1 for _ in range(len(test_labels))])
@@ -145,7 +152,7 @@ def evaluate_model(predictions, probs, train_predictions, train_probs, train_lab
     plt.show();
     
     
-evaluate_model(y_pred, y_probs, y_train_preds, y_train_probs, y_train, y_test)
+evaluate_model( y_probs, y_test)
 
 if save_model == 1:
     joblib.dump(model, model_name) 
